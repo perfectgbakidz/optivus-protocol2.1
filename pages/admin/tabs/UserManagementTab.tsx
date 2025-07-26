@@ -1,4 +1,6 @@
 
+
+
 import React, { useState, useEffect, useMemo } from 'react';
 import * as api from '../../../services/api';
 import { User } from '../../../types';
@@ -6,6 +8,7 @@ import { Spinner } from '../../../components/ui/Spinner';
 import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
 import { UserDetailModal } from '../../../components/admin/UserDetailModal';
+import { CreateUserModal } from '../../../components/admin/CreateUserModal';
 
 const StatusBadge: React.FC<{ status: User['status'] }> = ({ status }) => {
     const baseClasses = 'px-2 py-1 text-xs font-semibold rounded-full inline-block capitalize';
@@ -22,6 +25,7 @@ export const UserManagementTab: React.FC = () => {
     const [error, setError] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
     const fetchUsers = async () => {
         setIsLoading(true);
@@ -52,12 +56,23 @@ export const UserManagementTab: React.FC = () => {
         setUsers(prevUsers => prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u));
     };
 
+    const handleUserCreated = (newUser: User) => {
+        setUsers(prevUsers => [...prevUsers, newUser]);
+        setIsCreateModalOpen(false);
+    };
+
     if (isLoading) return <Spinner />;
     if (error) return <div className="text-error text-center p-4">{error}</div>;
 
     return (
         <div className="space-y-8">
-            <h1 className="text-3xl font-bold text-white">User Management</h1>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <h1 className="text-3xl font-bold text-white">User Management</h1>
+                <Button onClick={() => setIsCreateModalOpen(true)}>
+                    Create Tier 2 Account
+                </Button>
+            </div>
+
 
             <div className="bg-brand-panel backdrop-blur-lg border border-brand-ui-element/20 rounded-lg shadow-lg">
                 <div className="p-4 border-b border-brand-ui-element/20">
@@ -105,6 +120,13 @@ export const UserManagementTab: React.FC = () => {
                     user={selectedUser}
                     onClose={() => setSelectedUser(null)}
                     onUpdate={handleUserUpdate}
+                />
+            )}
+
+            {isCreateModalOpen && (
+                <CreateUserModal
+                    onClose={() => setIsCreateModalOpen(false)}
+                    onUserCreated={handleUserCreated}
                 />
             )}
         </div>

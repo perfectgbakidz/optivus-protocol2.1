@@ -105,8 +105,8 @@ export const HomePage: React.FC = () => {
                     </Button>
                   </div>
                 </div>
-                <div className="hidden md:flex items-center justify-center h-80 md:h-[560px]">
-                    <img src="/IMG_4485.PNG" alt="A purple, geometric, glowing orb representing DeFi infrastructure" className="h-full w-full object-contain animate-float" />
+                <div className="flex items-center justify-center h-80 md:h-[560px]">
+                    <img src="https://i.imgur.com/XY1ip5H.png" alt="A purple, geometric, glowing orb representing DeFi infrastructure" className="h-full w-full object-contain animate-float" />
                 </div>
             </div>
           </section>
@@ -142,19 +142,19 @@ export const HomePage: React.FC = () => {
                 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     <FeatureCard 
-                    icon={<img src="/buy.png" alt="Buy $OPTI Icon" className="h-20 w-20 object-contain" />} 
+                    icon={<img src="https://i.imgur.com/eedqw1E.png" alt="Buy $OPTI Icon" className="h-20 w-20 object-contain" />} 
                     title="Buy $OPTIV. Direct, Fast, Secure."
                     >
                     Optivus Protocol makes it simple to invest in your future – no third parties, no delays. Purchase $OPTIV instantly on-site with full transparency and total control.
                     </FeatureCard>
                     <FeatureCard 
-                    icon={<img src="/refer.png" alt="Refer with Optivus Icon" className="h-20 w-20 object-contain" />} 
+                    icon={<img src="https://i.imgur.com/iTkhONH.png" alt="Refer with Optivus Icon" className="h-20 w-20 object-contain" />} 
                     title="Refer with Optivus. Earn Without Limits."
                     >
                     Optivus Protocol turns your network into a growth engine with smart, blockchain-powered referrals. Share. Earn. Expand – effortlessly and transparently, with rewards you can trust.
                     </FeatureCard>
                     <FeatureCard 
-                    icon={<img src="/stake.png" alt="Stake $OPTI Icon" className="h-20 w-20 object-contain" />} 
+                    icon={<img src="https://i.imgur.com/Rpd3PtY.png" alt="Stake $OPTI Icon" className="h-20 w-20 object-contain" />} 
                     title="Stake $OPTIV. Grow with Purpose."
                     >
                     Optivus Protocol empowers your financial future with secure, scalable Web3 infrastructure. Earn rewards while supporting next-gen blockchain innovation – fast, reliable, and built to last.

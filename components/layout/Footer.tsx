@@ -26,7 +26,7 @@ export const Footer: React.FC = () => {
                 <p className="text-lg font-semibold text-brand-light-gray/90">Follow us on</p>
                 <div className="flex flex-wrap justify-center items-center gap-6 mt-4">
                     <SocialIcon href="https://discord.gg/zGGtpydJxE" aria-label="Join on Discord">
-                        <img src="/discord.png" alt="Discord" className="h-7 w-7" />
+                        <img src="https://i.imgur.com/muFS1AD.png" alt="Discord" className="h-7 w-7" />
                     </SocialIcon>
                     <SocialIcon href="https://x.com/OptivusProtocol?t=t15w-GFwUR-Dyo4JVoChuQ&s=09" aria-label="Follow on X">
                         <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
@@ -42,7 +42,7 @@ export const Footer: React.FC = () => {
           <p>&copy; {new Date().getFullYear()} Optivus Protocol. All rights reserved.</p>
           <span className="text-brand-ui-element">|</span>
           <div className="flex items-center gap-2">
-            <img src="/Solana.jpg" alt="Solana" className="h-4 w-4 rounded-full object-cover" />
+            <img src="https://i.imgur.com/W8dUB8H.png" alt="Solana" className="h-4 w-4 rounded-full object-cover" />
             <span>Solana</span>
           </div>
         </div>

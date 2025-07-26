@@ -1,4 +1,5 @@
 
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
@@ -8,7 +9,6 @@ import * as api from '../../services/api';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Logo } from '../../components/ui/Logo';
 import { Modal } from '../../components/layout/Modal';
-import { CryptoIllustration } from '../../components/illustrations/CryptoIllustration';
 import { AnimatedWaveBackground } from '../../components/ui/AnimatedWaveBackground';
 
 
@@ -17,16 +17,6 @@ const SocialIcon: React.FC<{ href: string, 'aria-label': string, children: React
         {children}
     </a>
 );
-
-const FeatureItem: React.FC<{ children: React.ReactNode }> = ({ children }) => (
-    <div className="flex items-center gap-3">
-        <div className="w-6 h-6 flex-shrink-0 bg-success/20 rounded-full flex items-center justify-center">
-            <svg className="w-4 h-4 text-success" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-        </div>
-        <span className="font-medium text-brand-white">{children}</span>
-    </div>
-);
-
 
 export const SignupPage: React.FC = () => {
   const { signup, finalizeRegistrationAndLogin } = useAuth();
@@ -70,6 +60,7 @@ export const SignupPage: React.FC = () => {
       setFormDetails(prev => ({ ...prev, referralCode: refCode }));
     }
   }, [location.search]);
+  
 
   useEffect(() => {
     if (!formDetails.username) {
@@ -217,6 +208,11 @@ export const SignupPage: React.FC = () => {
       }
       setPaymentModalStep('card');
   }
+
+  const handleGetAccessClick = () => {
+    setIsPaymentModalOpen(true);
+    setPaymentModalStep('select');
+  };
   
   const inputClasses = "bg-white/10 backdrop-blur-sm border-white/20 rounded-full py-3 px-5 focus:bg-white/20 w-full";
 
@@ -314,57 +310,34 @@ export const SignupPage: React.FC = () => {
             )}
 
             {step === 'payment' && (
-                 <div className="mt-8 w-full grid md:grid-cols-2 gap-10 items-center">
-                    <div className="flex flex-col items-center gap-6 animate-fade-in-up">
-                        <div className="w-full bg-brand-panel border-4 border-brand-purple/50 rounded-2xl shadow-2xl shadow-brand-purple/20 p-6 md:p-8 flex flex-col gap-6 text-white">
-                            
-                            <div className="text-center font-bold text-2xl py-3 px-6 bg-brand-purple/80 rounded-lg shadow-lg flex items-center justify-center gap-3">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
-                                BUY NOW
+                <div className="w-full h-full flex-grow flex flex-col items-center justify-center gap-8 animate-fade-in-up px-4 md:px-8">
+                    <div className="flex flex-col md:flex-row items-center justify-center gap-y-4 md:gap-x-8">
+                        {/* Left Image (static) */}
+                        <div className="flex justify-center">
+                            <img 
+                                src="https://i.imgur.com/MXSW4eu.png" 
+                                alt="Optivus Protocol Graphic" 
+                                className="h-40 w-40 sm:h-56 sm:w-56 md:h-72 md:w-72 lg:h-96 lg:w-96 object-contain"
+                            />
+                        </div>
+                        {/* Right column with animated image and button */}
+                        <div className="flex flex-col items-center justify-center gap-4">
+                            <div className="flex justify-center">
+                                <img 
+                                    src="https://i.imgur.com/AKMJf5b.png" 
+                                    alt="Floating Crypto Orb" 
+                                    className="h-40 w-40 sm:h-56 sm:w-56 md:h-72 md:w-72 lg:h-96 lg:w-96 object-contain animate-float"
+                                />
                             </div>
-
-                            <div className="text-center">
-                                <span className="text-7xl font-extrabold">£50</span>
-                                <span className="ml-2 text-xl font-semibold text-brand-light-gray">One Time Fee</span>
-                            </div>
-
-                            <Button onClick={() => { setIsPaymentModalOpen(true); setPaymentModalStep('select'); }} size="lg" className="w-full !rounded-lg !text-xl py-4 animate-pulse-slow">
+                            <Button 
+                                onClick={handleGetAccessClick} 
+                                size="lg" 
+                                className="!rounded-lg font-bold w-full max-w-sm"
+                            >
                                 GET ACCESS
                             </Button>
-
-                            <div className="space-y-3 border-t border-brand-ui-element/30 pt-6">
-                                <FeatureItem>Earn Instantly With Referrals</FeatureItem>
-                                <FeatureItem>LIVE Updates On Earnings</FeatureItem>
-                                <FeatureItem>Withdraw Any Time</FeatureItem>
-                                <FeatureItem>Your Network Is Your Net Worth</FeatureItem>
-                            </div>
-                            
-                            <div className="flex justify-center items-center gap-6 text-brand-light-gray pt-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-brand-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-brand-secondary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5">
-                                  <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
-                                </svg>
-                            </div>
-                        </div>
-
-                        <div className="w-full text-center p-3 border-2 border-brand-purple/80 rounded-lg font-semibold text-brand-secondary">
-                            Join Us Now And Become a member
-                        </div>
-                        
-                        <div className="text-center pt-2">
-                            <h3 className="text-xl font-bold">Secure Checkout</h3>
-                            <div className="flex justify-center flex-wrap items-center gap-x-5 gap-y-3 mt-4 opacity-90">
-                                <img src="/visa.png" alt="Visa" className="h-4" />
-                                <img src="/mastercard.png" alt="Mastercard" className="h-6 rounded-sm" />
-                                <img src="/amex.jpeg" alt="American Express" className="h-6" />
-                                <img src="/discover.jpeg" alt="Discover" className="h-4 rounded-sm" />
-                                <img src="/paypal.jpeg" alt="PayPal" className="h-4 rounded-sm" />
-                            </div>
                         </div>
                     </div>
-
-                    <CryptoIllustration />
-
                 </div>
             )}
         </main>
@@ -373,7 +346,7 @@ export const SignupPage: React.FC = () => {
             <p className="text-lg font-semibold text-brand-light-gray/90">Follow us on</p>
             <div className="flex flex-wrap justify-center items-center gap-6 mt-4">
                 <SocialIcon href="https://discord.gg/zGGtpydJxE" aria-label="Join on Discord">
-                    <img src="/discord.png" alt="Discord" className="h-7 w-7" />
+                    <img src="https://i.imgur.com/muFS1AD.png" alt="Discord" className="h-7 w-7" />
                 </SocialIcon>
                 <SocialIcon href="https://x.com/OptivusProtocol?t=t15w-GFwUR-Dyo4JVoChuQ&s=09" aria-label="Follow on X">
                     <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>

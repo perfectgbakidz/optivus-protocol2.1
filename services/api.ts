@@ -1,5 +1,6 @@
 
 
+
 import { User, DashboardStats, DownlineLevel, Transaction, TeamMember, AdminStats, WithdrawalRequest, KycRequest } from '../types';
 import { ethers } from 'ethers';
 
@@ -81,7 +82,8 @@ let mockUser: User = {
   is2faEnabled: false,
   role: 'user',
   status: 'active',
-  balance: 850.25
+  balance: 850.25,
+  withdrawalStatus: 'active'
 };
 
 const mockAdmin: User = {
@@ -100,12 +102,13 @@ const mockAdmin: User = {
   is2faEnabled: false,
   role: 'admin',
   status: 'active',
-  balance: 0
+  balance: 15000,
+  withdrawalStatus: 'active'
 };
 
 let allMockUsers: User[] = [
     mockUser,
-    { id: 'user002', firstName: 'Bob', lastName: 'Smith', username: 'bobsmith', email: 'bob.s@example.com', emailVerified: true, referralCode: 'BOB123', kycStatus: 'verified', payoutConnected: true, hasPin: true, is2faEnabled: true, role: 'user', status: 'active', balance: 1500.50 },
+    { id: 'user002', firstName: 'Bob', lastName: 'Smith', username: 'bobsmith', email: 'bob.s@example.com', emailVerified: true, referralCode: 'BOB123', kycStatus: 'verified', payoutConnected: true, hasPin: true, is2faEnabled: true, role: 'user', status: 'active', balance: 1500.50, withdrawalStatus: 'active' },
     { 
         id: 'user003', firstName: 'Charlie', lastName: 'Brown', username: 'charlieb', email: 'charlie.b@example.com', emailVerified: false, referralCode: 'CHARLIE456', 
         kycStatus: 'pending', 
@@ -116,13 +119,13 @@ let allMockUsers: User[] = [
             country: 'United Kingdom',
             idDocumentUrl: '/mock-document/charlie-id.pdf'
         },
-        payoutConnected: true, hasPin: false, is2faEnabled: false, role: 'user', status: 'active', balance: 250.00 
+        payoutConnected: true, hasPin: false, is2faEnabled: false, role: 'user', status: 'active', balance: 250.00, withdrawalStatus: 'paused'
     },
     { 
         id: 'user004', firstName: 'Diana', lastName: 'Prince', username: 'dianap', email: 'diana.p@example.com', emailVerified: true, referralCode: 'DIANA789', 
         kycStatus: 'rejected',
         kycRejectionReason: 'The provided ID document was blurry and unreadable. Please upload a clearer image.',
-        payoutConnected: false, hasPin: true, is2faEnabled: false, role: 'user', status: 'active', balance: 50.25 
+        payoutConnected: false, hasPin: true, is2faEnabled: false, role: 'user', status: 'active', balance: 50.25, withdrawalStatus: 'active'
     },
 ];
 
@@ -299,6 +302,7 @@ export const mockFinalizePayment = (tempToken: string) => {
             role: 'user',
             status: 'active',
             balance: 0,
+            withdrawalStatus: 'active',
         };
         allMockUsers.push(newUser);
         recentlyRegisteredUser = null; // Clear temp data
@@ -490,9 +494,9 @@ export const mockDisable2FA = (token: string) => {
 // --- ADMIN API ---
 let mockAdminStats: AdminStats = {
     totalUsers: allMockUsers.length,
-    totalEarningsDistributed: 5280.45,
+    totalUserReferralEarnings: 5280.45,
     pendingWithdrawalsCount: mockPendingWithdrawals.length,
-    protocolFeesCollected: 1250.60
+    protocolBalance: 1250.60
 };
 
 export const mockFetchAdminStats = () => simulateRequest<AdminStats>(mockAdminStats, 700);
@@ -521,6 +525,43 @@ export const mockAdminUpdateUser = (userId: string, data: Partial<User>) => {
     }
     return simulateError('User not found.');
 };
+
+export const mockAdminCreateUser = (details: any) => {
+    const usernameExists = allMockUsers.some(u => u.username.toLowerCase() === details.username.toLowerCase());
+    if (usernameExists) {
+        return simulateError('Username is already taken.');
+    }
+    const emailExists = allMockUsers.some(u => u.email.toLowerCase() === details.email.toLowerCase());
+    if (emailExists) {
+        return simulateError('Email is already in use.');
+    }
+
+    const newUser: User = {
+        id: `user_admin_created_${Date.now()}`,
+        firstName: details.firstName,
+        lastName: details.lastName,
+        username: details.username,
+        email: details.email,
+        emailVerified: true, // Admin created accounts are pre-verified
+        referralCode: `${details.username.toUpperCase()}ADMIN`,
+        kycStatus: 'unverified',
+        payoutConnected: false,
+        hasPin: false,
+        is2faEnabled: false,
+        role: 'user',
+        status: 'active',
+        balance: 0,
+        withdrawalStatus: 'active',
+    };
+
+    allMockUsers.push(newUser);
+    mockAdminStats.totalUsers = allMockUsers.length;
+    
+    console.log(`Admin created new user: ${details.username}. Referrer: ${details.referrerUsername}`);
+    // In a real backend, you'd link the user to the referrer here.
+
+    return simulateRequest({ success: true, user: newUser });
+}
 
 export const mockFetchAllTransactions = (page: number, limit = 10) => {
     const start = (page - 1) * limit;

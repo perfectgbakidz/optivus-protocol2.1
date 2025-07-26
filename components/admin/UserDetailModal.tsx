@@ -1,4 +1,6 @@
 
+
+
 import React, { useState } from 'react';
 import { Modal } from '../layout/Modal';
 import { User } from '../../types';
@@ -15,6 +17,7 @@ interface UserDetailModalProps {
 export const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose, onUpdate }) => {
     const [balance, setBalance] = useState(user.balance.toString());
     const [status, setStatus] = useState(user.status);
+    const [withdrawalStatus, setWithdrawalStatus] = useState<'active' | 'paused'>(user.withdrawalStatus || 'active');
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
@@ -26,7 +29,8 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose,
         try {
             const res = await api.mockAdminUpdateUser(user.id, {
                 balance: parseFloat(balance),
-                status
+                status,
+                withdrawalStatus
             });
             onUpdate(res.user);
             setMessage('User updated successfully!');
@@ -80,6 +84,25 @@ export const UserDetailModal: React.FC<UserDetailModalProps> = ({ user, onClose,
                             onClick={() => setStatus('frozen')}
                         >
                             Frozen
+                        </Button>
+                    </div>
+                </div>
+
+                 <div className="border-t border-brand-ui-element/30 pt-4">
+                    <h3 className="text-lg font-semibold text-brand-white mb-2">Withdrawal Status</h3>
+                    <div className="flex gap-4">
+                        <Button 
+                            variant={withdrawalStatus === 'active' ? 'primary' : 'secondary'}
+                            onClick={() => setWithdrawalStatus('active')}
+                            className="bg-success/80 hover:bg-success"
+                        >
+                            Active
+                        </Button>
+                         <Button 
+                            variant={withdrawalStatus === 'paused' ? 'danger' : 'secondary'}
+                            onClick={() => setWithdrawalStatus('paused')}
+                        >
+                            Paused
                         </Button>
                     </div>
                 </div>

@@ -1,5 +1,6 @@
 
 
+
 export interface User {
   id: string;
   firstName: string;
@@ -17,6 +18,7 @@ export interface User {
   role: 'user' | 'admin';
   status: 'active' | 'frozen';
   balance: number;
+  withdrawalStatus?: 'active' | 'paused';
   kycData?: {
     address: string;
     city: string;
@@ -84,9 +86,9 @@ export interface TeamMember {
 
 export interface AdminStats {
     totalUsers: number;
-    totalEarningsDistributed: number;
+    totalUserReferralEarnings: number;
     pendingWithdrawalsCount: number;
-    protocolFeesCollected: number;
+    protocolBalance: number;
 }
 
 export interface KycRequest {
