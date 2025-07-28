@@ -1,5 +1,7 @@
 
 
+
+
 import React, { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../../components/ui/Button';
@@ -24,7 +26,6 @@ export const SignupPage: React.FC = () => {
   const location = useLocation();
   const [step, setStep] = useState<'details' | 'payment'>('details');
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const [paymentModalStep, setPaymentModalStep] = useState<'select' | 'card' | null>(null);
 
   const [tempToken, setTempToken] = useState<string | null>(null);
   const [formDetails, setFormDetails] = useState({
@@ -43,8 +44,7 @@ export const SignupPage: React.FC = () => {
     cvc: '',
   });
   const [error, setError] = useState('');
-  const [loadingMethod, setLoadingMethod] = useState<'card' | 'crypto' | null>(null);
-  const [isTransakWidgetVisible, setIsTransakWidgetVisible] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   
   const [usernameStatus, setUsernameStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const [usernameMessage, setUsernameMessage] = useState('');
@@ -117,7 +117,7 @@ export const SignupPage: React.FC = () => {
       return;
     }
 
-    setLoadingMethod('card'); // Use loading state to disable button
+    setIsProcessing(true);
     try {
         const token = await signup(formDetails);
         setTempToken(token);
@@ -125,17 +125,13 @@ export const SignupPage: React.FC = () => {
     } catch (err: any) {
         setError(err.message || 'Registration failed.');
     } finally {
-        setLoadingMethod(null);
+        setIsProcessing(false);
     }
-  };
-
-  const handleSuccessfulLogin = () => {
-    navigate('/dashboard');
   };
   
   const handleCardPaymentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoadingMethod('card');
+    setIsProcessing(true);
     setError('');
 
     await new Promise(res => setTimeout(res, 1500));
@@ -143,7 +139,7 @@ export const SignupPage: React.FC = () => {
 
     if (!tempToken) {
         setError('Session expired. Please start over.');
-        setLoadingMethod(null);
+        setIsProcessing(false);
         closePaymentModal();
         setStep('details');
         return;
@@ -151,67 +147,22 @@ export const SignupPage: React.FC = () => {
       
     try {
         await finalizeRegistrationAndLogin(tempToken);
-        handleSuccessfulLogin();
+        navigate('/dashboard');
     } catch(err: any) {
         setError(err.message || 'Finalizing your account failed. Please contact support.');
     } finally {
-        setLoadingMethod(null);
+        setIsProcessing(false);
     }
   }
-
-  const launchTransak = () => {
-      setLoadingMethod('crypto');
-      setError('');
-      
-      setTimeout(() => {
-          setIsTransakWidgetVisible(true);
-          setLoadingMethod(null);
-      }, 750);
-  };
-
-  const handleTransakPaymentConfirm = async () => {
-    setLoadingMethod('crypto');
-    setError('');
-
-    await new Promise(res => setTimeout(res, 2000));
-    console.log('Simulating Transak success event...');
-
-    if (!tempToken) {
-      setError('Session expired. Please start over.');
-      setLoadingMethod(null);
-      setIsTransakWidgetVisible(false);
-      setStep('details');
-      return;
-    }
-    
-    try {
-      await finalizeRegistrationAndLogin(tempToken);
-      handleSuccessfulLogin();
-    } catch(err: any) {
-      setError(err.message || 'Finalizing your account failed. Please contact support.');
-      setLoadingMethod(null);
-    } 
-  };
   
   const closePaymentModal = () => {
       setIsPaymentModalOpen(false);
-      setPaymentModalStep(null);
       setError('');
-      setLoadingMethod(null);
-  }
-
-  const handlePaymentSelection = (paymentMethod: 'card' | 'crypto') => {
-      if (paymentMethod === 'crypto') {
-          closePaymentModal();
-          launchTransak();
-          return;
-      }
-      setPaymentModalStep('card');
+      setIsProcessing(false);
   }
 
   const handleGetAccessClick = () => {
     setIsPaymentModalOpen(true);
-    setPaymentModalStep('select');
   };
   
   const inputClasses = "bg-white/10 backdrop-blur-sm border-white/20 rounded-full py-3 px-5 focus:bg-white/20 w-full";
@@ -296,7 +247,7 @@ export const SignupPage: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className="mt-6 flex justify-center">
-                                    <Button type="submit" size="lg" className="w-full sm:w-1/2 !rounded-full !text-lg" isLoading={loadingMethod !== null} disabled={usernameStatus !== 'available'}>
+                                    <Button type="submit" size="lg" className="w-full sm:w-1/2 !rounded-full !text-lg" isLoading={isProcessing} disabled={usernameStatus !== 'available'}>
                                         Create
                                     </Button>
                                 </div>
@@ -345,9 +296,6 @@ export const SignupPage: React.FC = () => {
         <footer className="relative z-10 text-center">
             <p className="text-lg font-semibold text-brand-light-gray/90">Follow us on</p>
             <div className="flex flex-wrap justify-center items-center gap-6 mt-4">
-                <SocialIcon href="https://discord.gg/zGGtpydJxE" aria-label="Join on Discord">
-                    <img src="https://i.imgur.com/muFS1AD.png" alt="Discord" className="h-7 w-7" />
-                </SocialIcon>
                 <SocialIcon href="https://x.com/OptivusProtocol?t=t15w-GFwUR-Dyo4JVoChuQ&s=09" aria-label="Follow on X">
                     <svg className="h-6 w-6" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" /></svg>
                 </SocialIcon>
@@ -357,81 +305,19 @@ export const SignupPage: React.FC = () => {
             </div>
         </footer>
 
-        <Modal isOpen={isPaymentModalOpen} onClose={closePaymentModal} title={paymentModalStep === 'card' ? 'Enter Card Details' : 'Select Payment Method'}>
-            {paymentModalStep === 'select' && (
-                 <div className="space-y-4">
-                    <p className="text-brand-light-gray text-center">Complete your registration by paying the one-time <span className="font-bold text-brand-secondary">£50 fee</span>.</p>
-                    {error && <div className="bg-error/10 border border-error text-error p-3 rounded-md text-sm">{error}</div>}
-                    
-                    <div className="bg-brand-dark/50 p-4 rounded-lg space-y-3 border border-brand-ui-element/50">
-                        <Button onClick={() => handlePaymentSelection('card')} className="w-full" isLoading={loadingMethod === 'card'}>Continue with Card</Button>
-                        <div className="relative my-2">
-                            <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-brand-ui-element"></div></div>
-                            <div className="relative flex justify-center text-sm"><span className="px-2 bg-brand-dark text-brand-light-gray">OR</span></div>
-                        </div>
-                        <Button onClick={() => handlePaymentSelection('crypto')} variant="secondary" className="w-full" isLoading={loadingMethod === 'crypto'}>Pay with Crypto (via Transak)</Button>
-                    </div>
+        <Modal isOpen={isPaymentModalOpen} onClose={closePaymentModal} title="Complete Your Registration">
+             <form onSubmit={handleCardPaymentSubmit} className="space-y-4">
+                <p className="text-brand-light-gray text-center text-sm">You will be charged a one-time fee of £50.</p>
+                {error && <div className="bg-error/10 border border-error text-error p-3 rounded-md text-sm">{error}</div>}
+                <Input name="name" label="Cardholder Name" value={cardDetails.name} onChange={handleCardDetailsChange} required />
+                <Input name="number" label="Card Number" value={cardDetails.number} onChange={handleCardDetailsChange} required placeholder="0000 0000 0000 0000" />
+                <div className="flex gap-4">
+                    <Input name="expiry" label="Expiry (MM/YY)" value={cardDetails.expiry} onChange={handleCardDetailsChange} required placeholder="MM/YY" />
+                    <Input name="cvc" label="CVC" value={cardDetails.cvc} onChange={handleCardDetailsChange} required placeholder="123" />
                 </div>
-            )}
-             {paymentModalStep === 'card' && (
-                <form onSubmit={handleCardPaymentSubmit} className="space-y-4">
-                    <p className="text-brand-light-gray text-center text-sm">You will be charged a one-time fee of £50.</p>
-                    {error && <div className="bg-error/10 border border-error text-error p-3 rounded-md text-sm">{error}</div>}
-                    <Input name="name" label="Cardholder Name" value={cardDetails.name} onChange={handleCardDetailsChange} required />
-                    <Input name="number" label="Card Number" value={cardDetails.number} onChange={handleCardDetailsChange} required placeholder="0000 0000 0000 0000" />
-                    <div className="flex gap-4">
-                        <Input name="expiry" label="Expiry (MM/YY)" value={cardDetails.expiry} onChange={handleCardDetailsChange} required placeholder="MM/YY" />
-                        <Input name="cvc" label="CVC" value={cardDetails.cvc} onChange={handleCardDetailsChange} required placeholder="123" />
-                    </div>
-                    <Button type="submit" className="w-full" isLoading={loadingMethod === 'card'}>Pay £50 Securely</Button>
-                    <button type="button" onClick={() => setPaymentModalStep('select')} className="text-sm text-brand-light-gray hover:text-brand-secondary transition-colors w-full text-center mt-2" disabled={loadingMethod === 'card'}>
-                        &larr; Back to payment options
-                    </button>
-                </form>
-            )}
+                <Button type="submit" className="w-full" isLoading={isProcessing}>Pay £50 Securely</Button>
+            </form>
         </Modal>
-
-        {isTransakWidgetVisible && (
-        <div className="fixed inset-0 bg-black bg-opacity-70 z-50 flex justify-center items-center p-4">
-          <div 
-            className="bg-brand-panel border border-brand-ui-element rounded-lg shadow-2xl w-full max-w-sm p-6 text-center space-y-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <h3 className="text-xl font-bold text-brand-secondary">Transak Secure Checkout</h3>
-            <p className="text-brand-light-gray">
-              You will be redirected to Transak to complete your payment securely.
-            </p>
-            <div className="bg-brand-dark/50 p-4 rounded-lg">
-              <p className="text-brand-light-gray">Total to Pay:</p>
-              <p className="text-3xl font-bold text-white">£50.00</p>
-            </div>
-            
-            {error && <div className="text-error p-2 rounded bg-error/10 border border-error text-sm">{error}</div>}
-
-            <p className="text-xs text-brand-ui-element">
-              This is a simulation. In a live environment, a Transak window would open here for you to choose a cryptocurrency and finalize the payment.
-            </p>
-
-            <div className="space-y-2 pt-2">
-              <Button
-                className="w-full"
-                onClick={handleTransakPaymentConfirm}
-                isLoading={loadingMethod === 'crypto'}
-              >
-                Confirm & Simulate Payment
-              </Button>
-              <Button
-                variant="secondary"
-                className="w-full"
-                onClick={() => setIsTransakWidgetVisible(false)}
-                disabled={loadingMethod === 'crypto'}
-              >
-                Cancel
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
