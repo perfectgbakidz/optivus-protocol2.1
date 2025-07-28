@@ -1,5 +1,7 @@
 
 
+
+
 import React, { useState } from 'react';
 import { useAuth } from '../../../hooks/useAuth';
 import * as api from '../../../services/api';
@@ -29,12 +31,6 @@ export const KycTab: React.FC = () => {
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
 
-    const [paypalEmailInput, setPaypalEmailInput] = useState('');
-    const [isSavingPaypal, setIsSavingPaypal] = useState(false);
-    const [paypalError, setPaypalError] = useState('');
-    const [showPaypalSetup, setShowPaypalSetup] = useState(false);
-
-
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
@@ -62,29 +58,11 @@ export const KycTab: React.FC = () => {
         }
     };
     
-     const handleSavePaypalEmail = async () => {
-        if (!paypalEmailInput.includes('@')) {
-            setPaypalError('Please enter a valid email address.');
-            return;
-        }
-        setPaypalError('');
-        setIsSavingPaypal(true);
-        try {
-            const updatedUser = await api.mockUpdateProfile({ paypalEmail: paypalEmailInput });
-            updateUser(updatedUser);
-            setShowPaypalSetup(false);
-        } catch (err: any) {
-            setPaypalError(err.message || 'Failed to save PayPal email.');
-        } finally {
-            setIsSavingPaypal(false);
-        }
-    };
-    
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         setMessage('');
-        if(!idDocument || !(user?.payoutConnected || user?.paypalEmail)) {
+        if(!idDocument || !user?.payoutConnected) {
             setError('Please upload a document and set up a payout method.');
             return;
         }
@@ -157,45 +135,19 @@ export const KycTab: React.FC = () => {
                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
                            <span>Stripe Account Connected Successfully</span>
                          </div>
-                     ) : user?.paypalEmail ? (
-                         <div className="mt-4 flex items-center gap-2 bg-success/10 border border-success text-success p-3 rounded-md">
-                           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                           <span>PayPal Email Saved: <span className="font-semibold">{user.paypalEmail}</span></span>
-                         </div>
                      ) : (
                          <>
-                            <p className="text-sm text-brand-light-gray mt-1">Connect an account to receive fiat payouts. You only need to set up one method to proceed.</p>
-                             {showPaypalSetup ? (
-                                <div className="mt-4 space-y-3 bg-brand-dark/30 p-4 rounded-lg border border-brand-ui-element/20">
-                                    <h3 className="font-semibold">Enter your PayPal Email</h3>
-                                    {paypalError && <p className="text-error text-sm">{paypalError}</p>}
-                                    <Input
-                                        label="PayPal Email"
-                                        type="email"
-                                        value={paypalEmailInput}
-                                        onChange={e => setPaypalEmailInput(e.target.value)}
-                                        required
-                                    />
-                                    <div className="flex gap-2">
-                                        <Button type="button" onClick={handleSavePaypalEmail} isLoading={isSavingPaypal}>Save Email</Button>
-                                        <Button type="button" onClick={() => setShowPaypalSetup(false)} variant="outline" disabled={isSavingPaypal}>Cancel</Button>
-                                    </div>
-                                </div>
-                            ) : (
-                                <div className="mt-4 flex flex-col sm:flex-row gap-4">
-                                    <Button type="button" onClick={handleConnectStripe} variant="secondary" className="w-full sm:w-auto" isLoading={isLoading}>
-                                        Connect with Stripe
-                                    </Button>
-                                    <Button type="button" onClick={() => setShowPaypalSetup(true)} variant="secondary" className="w-full sm:w-auto" isLoading={isLoading}>
-                                        Set up with PayPal
-                                    </Button>
-                                </div>
-                            )}
+                            <p className="text-sm text-brand-light-gray mt-1">Connect a Stripe account to receive payouts.</p>
+                            <div className="mt-4 flex flex-col sm:flex-row gap-4">
+                                <Button type="button" onClick={handleConnectStripe} variant="secondary" className="w-full sm:w-auto" isLoading={isLoading}>
+                                    Connect with Stripe
+                                </Button>
+                            </div>
                          </>
                      )}
                 </div>
 
-                <Button type="submit" className="w-full" isLoading={isLoading} disabled={!idDocument || !(user?.payoutConnected || user?.paypalEmail)}>
+                <Button type="submit" className="w-full" isLoading={isLoading} disabled={!idDocument || !user?.payoutConnected}>
                     {isRejected ? 'Resubmit for Verification' : 'Submit for Verification'}
                 </Button>
             </form>
