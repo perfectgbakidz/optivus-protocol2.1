@@ -1,6 +1,8 @@
 
 
 
+
+
 import { User, DashboardStats, DownlineLevel, Transaction, TeamMember, AdminStats, WithdrawalRequest, KycRequest } from '../types';
 import { ethers } from 'ethers';
 
@@ -76,7 +78,6 @@ let mockUser: User = {
   referralCode: 'ALEXD123',
   kycStatus: 'unverified',
   walletAddress: undefined, // Start with no wallet
-  paypalEmail: undefined, // Start with no paypal email
   payoutConnected: false,
   hasPin: false,
   is2faEnabled: false,
@@ -96,7 +97,6 @@ const mockAdmin: User = {
   referralCode: 'ADMIN',
   kycStatus: 'verified',
   walletAddress: undefined,
-  paypalEmail: undefined,
   payoutConnected: true,
   hasPin: true,
   is2faEnabled: false,
@@ -198,7 +198,7 @@ let mockAllTransactions: Transaction[] = [
 ];
 
 let mockPendingWithdrawals: WithdrawalRequest[] = [
-    { id: 'wd_123', userId: 'user002', userName: 'Bob Smith', userEmail: 'bob.s@example.com', amount: 350.00, date: '2023-10-26', method: 'Crypto', destination: '0x1234...abcd' },
+    { id: 'wd_123', userId: 'user002', userName: 'Bob Smith', userEmail: 'bob.s@example.com', amount: 350.00, date: '2023-10-26', method: 'Stripe', destination: 'Stripe Connect Account' },
 ];
 
 
@@ -295,7 +295,6 @@ export const mockFinalizePayment = (tempToken: string) => {
             referralCode: `${recentlyRegisteredUser.username.toUpperCase()}NEW`,
             kycStatus: 'unverified',
             walletAddress: undefined,
-            paypalEmail: undefined,
             payoutConnected: false,
             hasPin: false,
             is2faEnabled: false,
@@ -334,7 +333,7 @@ export const mockCheckUsername = (username: string) => {
 export const mockFetchDashboardStats = () => simulateRequest(mockStats);
 export const mockFetchDownline = () => simulateRequest(mockDownline);
 export const mockFetchBalance = () => simulateRequest({ availableBalance: mockUser.balance });
-export const mockWithdraw = (data: { type: string, amount: number, pin: string, twoFactorToken?: string, network?: string, address?: string }) => {
+export const mockWithdraw = (data: { type: string, amount: number, pin: string, twoFactorToken?: string }) => {
     console.log("Withdrawal request received:", data);
     if (data.pin !== '123456') { // Assuming PIN is 123456 for now
         return simulateError('Invalid PIN.');
@@ -342,9 +341,7 @@ export const mockWithdraw = (data: { type: string, amount: number, pin: string, 
     if (mockUser.is2faEnabled && data.twoFactorToken !== '123456') {
         return simulateError('Invalid 2FA token.');
     }
-    if (data.type === 'Crypto' && (!data.network || !data.address)) {
-        return simulateError('Network and address are required for crypto withdrawals.');
-    }
+
     if (data.amount > mockUser.balance) {
         return simulateError('Withdrawal amount exceeds available balance.');
     }
@@ -357,7 +354,7 @@ export const mockWithdraw = (data: { type: string, amount: number, pin: string, 
         id: `txn_${Date.now()}`,
         date: new Date().toISOString().split('T')[0],
         type: 'Withdrawal',
-        description: `Pending withdrawal to ${data.type === 'Crypto' ? data.address : 'Fiat Account'}`,
+        description: `Pending withdrawal to Stripe Account`,
         amount: -data.amount,
         status: 'Pending',
     };
@@ -374,8 +371,8 @@ export const mockWithdraw = (data: { type: string, amount: number, pin: string, 
       userEmail: mockUser.email,
       amount: data.amount,
       date: new Date().toISOString().split('T')[0],
-      method: data.type === 'Crypto' ? 'Crypto' : 'Stripe', // default to Stripe for Fiat
-      destination: data.address || 'Stripe Connect Account'
+      method: 'Stripe',
+      destination: 'Stripe Connect Account'
     });
     
     // Also update the total pending count for admin stats
@@ -469,7 +466,7 @@ export const mockVerifyEmail = () => simulateRequest({ success: true, message: '
 // 2FA Endpoints
 export const mockEnable2FA = () => {
     temp2FASecret = 'JBSWY3DPEHPK3PXP';
-    const qrCodeUrl = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMCAwaDI1NnYyNTZIMHoiLz48cGF0aCBkPSJNNCA0aDI0OHYyNDhINHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMzIgMzJoNjR2NjRIMzJ6bTEyOCAw Sixty-fourdjY0aC02NHptLTIyIDEwMiAxMCAyIDIgMTAtMiA0LTYtNC0xMi04LTEwLTEyLTYtMTQgMi04IDgtMTJ2MThoNnYtOGw0IDQgMi0ydi02bC0xMi0yem0xNi0xMDYgMTIgMiA4IDQgMiAxMCA0IDYtNCAxMi0yIDgtMiA4IDQgNi0yIDgtMTAtMi0yLTYtNC00LTQtMTAtMi0xMi0yem0xMCAxMCA0IDIgMiA0LTIgNC00IDQtMi0yem00NiAxMDItNiA0LTEwIDgtMTYgOC02IDItNi0yLTQtNmgtMnYtNmgybC0yLTJoMmwtMi0yaDJ2LTRoMmwtMi0yaDJ2LTJoMmwtMi0yaDJ2LTJoMmwtMi0yaDJvLTJoNGwtNi00em0yLTIgMi0yem0tMTYtMTQgMi0yem0xMiAxNiAyLTJ6bS00IDQgMi0yem0tOCAxOC0yIDJ2MmgtMnYyaC0ydi0yaC0ydi0yaC0yaC0ybC0yLTJoLTR2MmgtMnYtNmgydi0yaDJ2LTJoMmwtMi0yaDR2LTJoMnYtMmg0djJoMi4wM2wtLjAzLjA1em0yMC45Ny0uMDV2MmgtMnYyaC0ydjJoLTJsMiAyaC0ydjJoLTJsMiAyaC0ybC0yIDJoLTRsLTIgMmgtdjRoMnYyaDR2MmgtMnYyaC0ydjJoLTJsLTIgMmg0djJoMmwtMiA0aDRsLTIgMmg0djJoMnYyaDJ2MmgtMnYyaC0ybC0yLTJoMnYtMmgydi0yaDJ2LTJoMnYtMmg0di0yaDJ2LTJoMnYtMmgydjJoMnYtMmgybC0yLTJoLTRsLTIgMi0yLTQtMi0yem0tMjYgMTYgMi0yem0tNCA0IDItMnptLTYgMiAyLTJ6bS00IDYgMi0yem0tMiA0IDItMnptLTYtMiAyLTJ6bS00IDQgMi0yem0yIDYgMi0yem00IDQgMi0yem02IDIgMi0yem00LTQgMi0yem04LTYgMi0yem00LTQgMi0yem0tMy45Ny0xOS45NWgydjJoLTJ6bS0yIDJoMnYyaC0yem0tMiAyaDJ2MmgtMnptLTQgMmgydjJoLTJ6bS0yIDJoMnYyaC0yem0tMi0yLTQtMnYtNGgtMnYtNGgtMnYtMmgtMnYtMmgtMnYtMmgtMnYtNGgtMnYtMmgtMnYtMmgtMnYtNmgtMnYtMmgtMnYtNGgtMnYtMmgtMnYtMmgtMnYtNGgtNnY2aDR2NGgydjJoMnY0aDJ2MmgydjJoMnYyaDJ2MmgydjRoMnY0aDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ->';
+    const qrCodeUrl = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMCAwaDI1NnYyNTZIMHoiLz48cGF0aCBkPSJNNCA0aDI0OHYyNDhINHoiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJNMzIgMzJoNjR2NjRIMzJ6bTEyOCAw Sixty-fourdjY0aC02NHptLTIyIDEwMiAxMCAyIDIgMTAtMiA0LTYtNC0xMi04LTEwLTEyLTYtMTQgMi04IDgtMTJ2MThoNnYtOGw0IDQgMi0ydi02bC0xMi0yem0xNi0xMDYgMTIgMiA4IDQgMiAxMCA0IDYtNCAxMi0yIDgtMiA4IDQgNi0yIDgtMTAtMi0yLTYtNC00LTQtMTAtMi0xMi0yem0xMCAxMCA0IDIgMiA0LTIgNC00IDQtMi0yem00NiAxMDItNiA0LTEwIDgtMTYgOC02IDItNi0yLTQtNmgtMnYtNmgybC0yLTJoMmwtMi0yaDJ2LTRoMmwtMi0yaDJ2LTJoMmwtMi0yaDJ2LTJoMmwtMi0yaDJvLTJoNGwtNi00em0yLTIgMi0yem0tMTYtMTQgMi0yem0xMiAxNiAyLTJ6bS00IDQgMi0yem0tOCAxOC0yIDJ2MmgtMnYyaC0ydi0yaC0ydi0yaC0yaC0ybC0yLTJoLTR2MmgtMnYtNmgydi0yaDJ2LTJoMmwtMi0yaDR2LTJoMnYtMmg0djJoMi4wM2wtLjAzLjA1em0yMC45Ny0uMDV2MmgtMnYyaC0ydjJoLTJsMiAyaC0ydjJoLTJsMiAyaC0ybC0yIDJoLTRsLTIgMmgtdjRoMnYyaDR2MmgtMnYyaC0ydjJoLTJsLTIgMmg0djJoMmwtMiA0aDRsLTIgMmg0djJoMnYyaDJ2MmgtMnYyaC0ybC0yLTJoMnYtMmgydi0yaDJ2LTJoMnYtMmg0di0yaDJ2LTJoMnYtMmgydjJoMnYtMmgybC0yLTJoLTRsLTIgMi0yLTQtMi0yem0tMjYgMTYgMi0yem0tNCA0IDItMnptLTYgMiAyLTJ6bS00IDYgMi0yem0tMiA0IDItMnptLTYtMiAyLTJ6bS00IDQgMi0yem0yIDYgMi0yem00IDQgMi0yem02IDIgMi0yem00LTQgMi0yem04LTYgMi0yem00LTQgMi0yem0tMy45Ny0xOS45NWgydjJoLTJ6bS0yIDJoMnYyaC0yem0tMiAyaDJ2MmgtMnptLTQgMmgydjJoLTJ6bS0yIDJoMnYyaC0yem0tMi0yLTQtMnYtNGgtMnYtNGgtMnYtMmgtMnYtMmgtMnYtMmgtMnYtNGgtMnYtMmgtMnYtMmgtMnYtNmgtMnYtMmgtMnYtNGgtMnYtMmgtMnYtMmgtMnYtNGgtNnY2aDR2NGgydjJoMnY0aDJ2MmgydjJoMnYyaDJ2MmgydjRoMnY0aDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyaDJ2MmgydjJoMnYyem0tNDAgMjggMi0yem00LTIgMi0yem0zNi4wMy0xMS45NWgtMnYtMmgyem0yIDBoLTJ2LTJoMnptLTQgMmgtMnYtMmgyem0tMiAyaC0ydjJoMnptLTQgMmgtMnYyaDJ6bTIgMmgtMnYyaDJ6bTQtMmgtMnYyaDJ6bS0xMi04aC0ydi0yaDJ6bS0yIDJoLTJ2LTJoMnptLTIgMmgtMnYtMmgyem0tNCAyaC0ydjJoMnptLTQgMmgtMnYyaDJ6bS0yIDJoLTJ2Mmgyem0yLTIgMC0yLTJ6bS00LTEyIDQgMnYtMiAyem0tMTE2IDExNiAyLTJ6Ii8+PC9zdmc+';
     return simulateRequest({ success: true, data: { qrCodeUrl, secret: temp2FASecret } });
 };
 
