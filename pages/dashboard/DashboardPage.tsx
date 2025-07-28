@@ -82,7 +82,10 @@ export const DashboardPage: React.FC = () => {
                         <h1 className="text-xl md:text-2xl font-bold text-white capitalize">{activeTab}</h1>
                     </div>
                     
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-center space-x-2">
+                        <a href="https://discord.gg/zGGtpydJxE" target="_blank" rel="noopener noreferrer" aria-label="Join on Discord" className="text-brand-light-gray/80 hover:text-brand-white transition-colors p-2 rounded-full hover:bg-brand-ui-element/50">
+                            <img src="https://i.imgur.com/muFS1AD.png" alt="Discord" className="h-6 w-6" />
+                        </a>
                         <Button onClick={logout} variant="outline" size="sm">Logout</Button>
                     </div>
                 </div>
