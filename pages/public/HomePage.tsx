@@ -142,19 +142,19 @@ export const HomePage: React.FC = () => {
                 
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                     <FeatureCard 
-                    icon={<img src="https://i.imgur.com/eedqw1E.png" alt="Buy $OPTI Icon" className="h-20 w-20 object-contain" />} 
+                    icon={<img src="https://imgur.com/lVi4Sa1.PNG" alt="Buy $OPTI Icon" className="h-20 w-20 object-contain" />} 
                     title="Buy $OPTIV. Direct, Fast, Secure."
                     >
                     Optivus Protocol makes it simple to invest in your future – no third parties, no delays. Purchase $OPTIV instantly on-site with full transparency and total control.
                     </FeatureCard>
                     <FeatureCard 
-                    icon={<img src="https://i.imgur.com/iTkhONH.png" alt="Refer with Optivus Icon" className="h-20 w-20 object-contain" />} 
+                    icon={<img src="https://imgur.com/xduWcEA.PNG" alt="Refer with Optivus Icon" className="h-20 w-20 object-contain" />} 
                     title="Refer with Optivus. Earn Without Limits."
                     >
                     Optivus Protocol turns your network into a growth engine with smart, blockchain-powered referrals. Share. Earn. Expand – effortlessly and transparently, with rewards you can trust.
                     </FeatureCard>
                     <FeatureCard 
-                    icon={<img src="https://i.imgur.com/Rpd3PtY.png" alt="Stake $OPTI Icon" className="h-20 w-20 object-contain" />} 
+                    icon={<img src="https://imgur.com/SYw5YPZ.PNG" alt="Stake $OPTI Icon" className="h-20 w-20 object-contain" />} 
                     title="Stake $OPTIV. Grow with Purpose."
                     >
                     Optivus Protocol empowers your financial future with secure, scalable Web3 infrastructure. Earn rewards while supporting next-gen blockchain innovation – fast, reliable, and built to last.
