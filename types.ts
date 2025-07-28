@@ -11,7 +11,6 @@ export interface User {
   referralCode: string;
   kycStatus: 'unverified' | 'pending' | 'verified' | 'rejected';
   walletAddress?: string;
-  paypalEmail?: string;
   payoutConnected: boolean;
   hasPin: boolean;
   is2faEnabled: boolean;
@@ -111,6 +110,6 @@ export interface WithdrawalRequest {
     userEmail: string;
     amount: number;
     date: string;
-    method: 'Crypto' | 'Stripe' | 'PayPal';
+    method: 'Stripe';
     destination: string; // Wallet address or email
 }
