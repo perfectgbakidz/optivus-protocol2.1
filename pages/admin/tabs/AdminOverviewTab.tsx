@@ -2,6 +2,7 @@
 
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { StatCard } from '../../../components/ui/StatCard';
 import { Spinner } from '../../../components/ui/Spinner';
 import * as api from '../../../services/api';
@@ -21,6 +22,7 @@ const SettingsCard: React.FC<{title: string, children: React.ReactNode, footer?:
 
 export const AdminOverviewTab: React.FC = () => {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [stats, setStats] = useState<AdminStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
@@ -67,7 +69,7 @@ export const AdminOverviewTab: React.FC = () => {
                     <div className="bg-brand-dark p-6 rounded-lg flex flex-col items-center justify-center text-center">
                         <p className="font-semibold">Withdrawal Management</p>
                         <p className="text-sm text-brand-light-gray mt-2">Manage and withdraw the master account's balance.</p>
-                        <button className="mt-4 text-brand-secondary hover:underline">Go to Withdrawals &rarr;</button>
+                        <button onClick={() => navigate('/admin/withdrawals')} className="mt-4 text-brand-secondary hover:underline">Go to Withdrawals &rarr;</button>
                     </div>
                 </div>
             </div>
